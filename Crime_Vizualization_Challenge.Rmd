@@ -33,8 +33,10 @@ data <- read.csv(file)
 
         data$Date<-as.Date(as.character(data$Date), "%m/%d/%Y")
 
-        #had to be a little clever with the time , basically trick everything to think it is the same day
+        #had to be a little clever with the time , basically trick everything to think it is the same day.
         #data$Time<-as.POSIXct(paste("1970-01-01", as.character(data$Time)), format="%Y-%m-%d %H:%M")
+
+        ##while the aboce works. I found the analysis looks easier just hacking out the hour....
         ##Alternate method is just to that the hh and convert to a number
         data$Time <- as.numeric(substring(as.character(data$Time),1,2))
 
@@ -45,4 +47,28 @@ str(data)
 
 ```
 
-The above shows the structure of the data. There are statistics on `r ddata[1]` crimes in the file `r "datafile"`.  
+The above shows the structure of the data. There are statistics on `r ddata[1]` crimes in the file `r "datafile"`. 
+
+
+###Question 1: Does the number of crimes show obvious variation between weekdays and weekends?
+
+```{r "plot of data", fig.height=3, fig.width=8, fig.align="center"  }
+
+require(ggplot2)
+        ##subset data for Monday or Friday to look at weekend versus weekday
+        dataXX<-data[data$DayOfWeek=="Monday"|data$DayOfWeek=="Friday"|data$DayOfWeek=="Tuesday"|data$DayOfWeek=="Saturday",]
+        ##create plot
+        dataXX$DayOfWeek <- factor(dataXX$DayOfWeek, levels= c("Monday", "Tuesday", "Friday", "Saturday"))
+        plotA <- ggplot(dataXX, aes(x= factor(PdDistrict)))
+        plotA<-plotA+geom_bar(colour="blue", fill="grey")
+        plotA<-plotA+facet_grid(.~DayOfWeek)
+        plotA<-plotA+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+        print(plotA)
+
+```
+
+
+Crime rates do seem to show correlation to the day of the week, but that correlation appears to depend on the district. For instance Central and Couthern districts are higher on the weekend whereas Taraval and Richmond, for exmaple, appear stabler.  
+
+Let's dig into that a bit more.
