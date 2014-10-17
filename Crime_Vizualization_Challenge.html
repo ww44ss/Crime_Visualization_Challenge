@@ -150,7 +150,9 @@ print(plotA)</code></pre>
 
         ## sort the data
         SF &lt;- sort(table(data$Category), decreasing=TRUE)
+        ## turn table into data frame
         SF&lt;-as.data.frame(SF)
+        ## just dump the first six lines
         head(SF, n=6)</code></pre>
 <pre><code>##                  SF
 ## LARCENY/THEFT  9262
@@ -159,7 +161,67 @@ print(plotA)</code></pre>
 ## ASSAULT        2691
 ## VANDALISM      1775
 ## VEHICLE THEFT  1762</code></pre>
-<pre class="r"><code>        #head(ctable, n=10)</code></pre>
+<pre class="r"><code>## print an html table of the most prevatlent crimes
+
+        ##subset the data for a few specific districts
+        PlotTenderloin &lt;-data[data$PdDistrict==&quot;TENDERLOIN&quot;, ]
+        PlotMission&lt;-data[data$PdDistrict==&quot;MISSION&quot;, ]
+        PlotNorthern&lt;-data[data$PdDistrict==&quot;NORTHERN&quot;, ]   
+        PlotRichmond&lt;-data[data$PdDistrict==&quot;RICHMOND&quot;, ]  
+
+        ## sort the data
+        ctable &lt;- sort(table(PlotTenderloin$Category), decreasing=TRUE)
+        ctable&lt;-as.data.frame(ctable)
+        ## keep only top five
+        print(&quot;TENDERLOIN&quot;)</code></pre>
+<pre><code>## [1] &quot;TENDERLOIN&quot;</code></pre>
+<pre class="r"><code>        head(ctable, n=5)</code></pre>
+<pre><code>##                ctable
+## LARCENY/THEFT     472
+## NON-CRIMINAL      318
+## OTHER OFFENSES    308
+## ASSAULT           302
+## DRUG/NARCOTIC     291</code></pre>
+<pre class="r"><code>        ## sort the data
+        ctable &lt;- sort(table(PlotMission$Category), decreasing=TRUE)
+        ctable&lt;-as.data.frame(ctable)
+        ## keep only top ten
+        print(&quot;MISSION&quot;)</code></pre>
+<pre><code>## [1] &quot;MISSION&quot;</code></pre>
+<pre class="r"><code>        head(ctable, n=5)</code></pre>
+<pre><code>##                ctable
+## LARCENY/THEFT     657
+## OTHER OFFENSES    589
+## NON-CRIMINAL      490
+## ASSAULT           413
+## WARRANTS          297</code></pre>
+<pre class="r"><code>                ## sort the data
+        ctable &lt;- sort(table(PlotNorthern$Category), decreasing=TRUE)
+        ctable&lt;-as.data.frame(ctable)
+        ## keep only top ten
+        print(&quot;NORTHERN&quot;)</code></pre>
+<pre><code>## [1] &quot;NORTHERN&quot;</code></pre>
+<pre class="r"><code>        head(ctable, n=5)</code></pre>
+<pre><code>##                ctable
+## LARCENY/THEFT    1284
+## NON-CRIMINAL      416
+## OTHER OFFENSES    401
+## ASSAULT           279
+## DRUG/NARCOTIC     190</code></pre>
+<pre class="r"><code>         ## sort the data
+        ctable &lt;- sort(table(PlotRichmond$Category), decreasing=TRUE)
+        ctable&lt;-as.data.frame(ctable)
+        ## keep only top ten
+        print(&quot;RICHMOND&quot;)</code></pre>
+<pre><code>## [1] &quot;RICHMOND&quot;</code></pre>
+<pre class="r"><code>        head(ctable, n=5)</code></pre>
+<pre><code>##                ctable
+## LARCENY/THEFT     560
+## NON-CRIMINAL      248
+## OTHER OFFENSES    219
+## VANDALISM         111
+## VEHICLE THEFT     100</code></pre>
+<p>This detail starts to show some of the richness of the data. For instance in the <em>Mission District</em> while Larceny/Theft is the most prevalent item, assualt and drugs/narcotic violations together account for more total crime than the does Larceny/Theft.<br />In the <em>Richmond District</em> by contrast, Assault is not among the top six items, while vandalism and vehicle theft together account for less than half of the leading crime, again Larceny/Theft</p>
 </div>
 
 

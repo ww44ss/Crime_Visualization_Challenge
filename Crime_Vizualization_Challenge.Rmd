@@ -112,11 +112,56 @@ Observing the variability of crime by district its natural to ask whether the na
 
         ## sort the data
         SF <- sort(table(data$Category), decreasing=TRUE)
+        ## turn table into data frame
         SF<-as.data.frame(SF)
+        ## just dump the first six lines
         head(SF, n=6)
-        #head(ctable, n=10)
-    
 
 ```
 
 
+```{r "most prevalent crimes by district", echo=TRUE}
+
+## print an html table of the most prevatlent crimes
+
+        ##subset the data for a few specific districts
+        PlotTenderloin <-data[data$PdDistrict=="TENDERLOIN", ]
+        PlotMission<-data[data$PdDistrict=="MISSION", ]
+        PlotNorthern<-data[data$PdDistrict=="NORTHERN", ]   
+        PlotRichmond<-data[data$PdDistrict=="RICHMOND", ]  
+
+        ## sort the data
+        ctable <- sort(table(PlotTenderloin$Category), decreasing=TRUE)
+        ctable<-as.data.frame(ctable)
+        ## keep only top five
+        print("TENDERLOIN")
+        head(ctable, n=5)
+
+        ## sort the data
+        ctable <- sort(table(PlotMission$Category), decreasing=TRUE)
+        ctable<-as.data.frame(ctable)
+        ## keep only top ten
+        print("MISSION")
+        head(ctable, n=5)
+
+                ## sort the data
+        ctable <- sort(table(PlotNorthern$Category), decreasing=TRUE)
+        ctable<-as.data.frame(ctable)
+        ## keep only top ten
+        print("NORTHERN")
+        head(ctable, n=5)
+
+         ## sort the data
+        ctable <- sort(table(PlotRichmond$Category), decreasing=TRUE)
+        ctable<-as.data.frame(ctable)
+        ## keep only top ten
+        print("RICHMOND")
+        head(ctable, n=5)
+        
+
+
+```
+
+
+This detail starts to show some of the richness of the data. For instance in the _Mission District_ while Larceny/Theft is the most prevalent item, assualt and drugs/narcotic violations together account for more total crime than the does Larceny/Theft.  
+In the _Richmond District_ by contrast, Assault is not among the top six items, while vandalism and vehicle theft together account for less than half of the leading crime, again Larceny/Theft
