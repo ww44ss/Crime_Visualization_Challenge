@@ -179,9 +179,15 @@ PlotVehicle<-data[data$Category=="VEHICLE THEFT", ]
 PlotAssault<-data[data$Category=="ASSAULT", ] 
 PlotWarrants<-data[data$Category=="VANDALISM", ] 
 
+        ##get map data
         map <- get_map(source="google", maptype="roadmap", location = 'San Francisco', zoom = 13)
+        ##generate map
         map1 <- ggmap(map) 
 
+        ## 
+        map1<-map1 + geom_point(aes(x = PlotTheft$X, y = PlotTheft$Y), data = PlotTheft, alpha = .1, color="red", size = 3)
+        map1<-map1 + geom_point(aes(x = PlotAssault$X, y = PlotAssault$Y), data = PlotAssault, alpha = .1, color="blue", size = 3)
+        map1<-map1 + geom_point(aes(x = PlotVehicle$X, y = PlotVehicle$Y), data = PlotVehicle, alpha = .2, color="darkgreen", size = 3)
 
 print(map1)
 
