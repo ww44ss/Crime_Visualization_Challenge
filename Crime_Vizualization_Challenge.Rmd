@@ -1,0 +1,48 @@
+---
+title: "SF Crime Visualization"
+author: "ww44ss"
+date: "Oct  2014"
+output: 
+html_document:
+    keep_md: true
+---
+
+
+```{r "data file information", echo=TRUE}
+
+datadir <-"sfpd"
+files <- list.files(datadir)
+len<-length(files)
+
+```
+
+There were `r len` files found in the data directory `r getwd()`.  
+
+```{r "get the data"}
+
+datafile = "SFPD_Incidents_-_Previous_Three_Months.csv"
+file = paste0(datadir,"/",datafile)    
+
+data <- read.csv(file)
+
+        ##fix day of week order
+        data$DayOfWeek <- factor(data$DayOfWeek, levels= c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+
+        ##for simplicity keep only complete cases
+        data<-data[complete.cases(data),]
+
+        data$Date<-as.Date(as.character(data$Date), "%m/%d/%Y")
+
+        #had to be a little clever with the time , basically trick everything to think it is the same day
+        #data$Time<-as.POSIXct(paste("1970-01-01", as.character(data$Time)), format="%Y-%m-%d %H:%M")
+        ##Alternate method is just to that the hh and convert to a number
+        data$Time <- as.numeric(substring(as.character(data$Time),1,2))
+
+str(data)
+
+        ddata<-dim(data)
+
+
+```
+
+The above shows the structure of the data. There are statistics on `r ddata[1]` crimes in the file `r "datafile"`.  
