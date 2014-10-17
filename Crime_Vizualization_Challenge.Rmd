@@ -101,3 +101,22 @@ This is more interesting. Each district has some pretty unique variation.  Some 
 - _Mission_ while having an overall farily high crime rate, shows little variation.   
 - _Tenderloin_ shows an apparent drop in the crime rate.  
 
+##Question 3: Does the type of crime vary by district?  
+
+Observing the variability of crime by district its natural to ask whether the nature of crimes show any district by district distinction. The easiest way to get at this is to just pull the data aprt by district and sort. First let's just look citywide.  
+
+```{r "most prevalent crimes"}
+
+## print an html table of the most prevatlent crimes
+        library(xtable)
+
+        ## sort the data
+        SF <- sort(table(data$Category), decreasing=TRUE)
+        SF<-as.data.frame(SF)
+        head(SF, n=6)
+        #head(ctable, n=10)
+    
+
+```
+
+
