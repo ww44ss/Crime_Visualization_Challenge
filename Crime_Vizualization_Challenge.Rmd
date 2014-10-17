@@ -69,6 +69,35 @@ require(ggplot2)
 ```
 
 
-Crime rates do seem to show correlation to the day of the week, but that correlation appears to depend on the district. For instance Central and Couthern districts are higher on the weekend whereas Taraval and Richmond, for exmaple, appear stabler.  
+Crime rates seem to show correlation to the day of the week, but the correlation appears to depend on the district. For instance the Central and Southern districts are higher on the weekend whereas Taraval and Richmond appear to show little change.  
 
-Let's dig into that a bit more.
+
+##Question 2: Digging Deeper: How does crime vary by day on a per district basis?
+
+```{r "plot of data2", fig.height=5, fig.width=10, fig.align="center"  }
+
+require(ggplot2)
+require(plyr)
+
+dataX <- ddply(data,.(DayOfWeek, PdDistrict), nrow)
+
+table(dataX$DayOfWeek)
+
+str(dataX)
+
+plotA <- ggplot(dataX, aes(x= factor(DayOfWeek), y = V1))
+plotA<- plotA+ geom_point(colour="blue")
+plotA<-plotA+facet_wrap(~PdDistrict, ncol=5) 
+plotA<-plotA+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+#plotA<-plotA+coord_flip()
+
+print(plotA)
+
+```
+
+This is more interesting. Each district has some pretty unique variation.  Some of the more interesting ones are listed below.  
+- _Bayview_ is mostly flat, but seems to show a higher rate on Friday nights.   
+- _Central_ shows a strong upward trend on the weekends, with Friday and Saturday night showing about 20% increase in crime.   
+- _Mission_ while having an overall farily high crime rate, shows little variation.   
+- _Tenderloin_ shows an apparent drop in the crime rate.  
+
