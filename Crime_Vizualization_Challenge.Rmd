@@ -80,6 +80,10 @@ require(ggplot2)
 
         print(plotA)
 
+png(filename="Day of Week.png")
+plotA
+dev.off()
+
 ```
 
 
@@ -106,9 +110,13 @@ dataX <- ddply(data,.(DayOfWeek, PdDistrict), nrow)
 
 print(plotA)
 
+png(filename="District Day of Week.png")
+plotA
+dev.off()
+
 ```
 
-This is more interesting. Each district has some pretty unique variation.  Some of the more interesting ones are listed below.  
+District by district crime rates show variation in the day of the week. Each district has some pretty unique variation.  Some of the more interesting ones are listed below.  
 - _Bayview_ is mostly flat, but seems to show a higher rate on Friday nights.   
 - _Central_ shows a strong upward trend on the weekends, with Friday and Saturday night showing about 20% increase in crime.   
 - _Mission_ while having an overall farily high crime rate, shows little variation.   
@@ -207,6 +215,10 @@ PlotVandalism<-data[data$Category=="VANDALISM", ]
         ##map1<-map1 + geom_point(aes(x = PlotVandalism$X, y = PlotVandalism$Y), data = PlotVehicle, alpha = .2, color="orange", size = 3)
 print(map1)
 
+png(filename="Crime Map.png")
+map1
+dev.off()
+
 ```
 
 We can see hotspots where crimes are more prevalent.
@@ -227,6 +239,9 @@ _DarkGreen_ data points representing Vehicle Theft are more spread across the Ci
         plot1<-plot1+xlab("Time")+ylab("Number")+ggtitle("Theft/Larcency v. Time")
         
         print(plot1)
+        png(filename="Theft.png")
+        plot1
+        dev.off()
 
         ##ddply the Larceny time of day
         AssaultTime<-ddply(PlotAssault, .(Time), nrow)
@@ -235,6 +250,9 @@ _DarkGreen_ data points representing Vehicle Theft are more spread across the Ci
         plot1<-plot1+xlab("Time")+ylab("Number")+ggtitle("Assault v. Time")
         
         print(plot1)
+        png(filename="Larcency.png")
+        plot1
+        dev.off()
 
 
         ##ddply the Vehicle Theft time of day
@@ -244,6 +262,9 @@ _DarkGreen_ data points representing Vehicle Theft are more spread across the Ci
         plot1<-plot1+xlab("Time")+ylab("Number")+ggtitle("Vehicle Theft v. Time")
         
         print(plot1)
+        png(filename="Vehicle.png")
+        plot1
+        dev.off()
 
 
         ##ddply Vandalism data by time
@@ -253,6 +274,10 @@ _DarkGreen_ data points representing Vehicle Theft are more spread across the Ci
         plot1<-plot1+xlab("Time")+ylab("Number")+ggtitle("Vandalism v. Time")
         
         print(plot1)
+
+        png(filename="Vandalism.png")
+        plot1
+        dev.off()
 
 
 
@@ -278,3 +303,5 @@ There are some inherent systematic assumptions in this data which also need furt
 
 
     
+    
+Fin
