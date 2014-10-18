@@ -78,7 +78,7 @@ require(ggplot2)
         plotA<-plotA+facet_grid(.~DayOfWeek)
         plotA<-plotA+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
-        print(plotA)
+        plotA
 
 png(filename="Day of Week.png")
 plotA
@@ -108,7 +108,7 @@ dataX <- ddply(data,.(DayOfWeek, PdDistrict), nrow)
         plotA<-plotA+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
         #plotA<-plotA+coord_flip()
 
-print(plotA)
+        plotA
 
 png(filename="District Day of Week.png")
 plotA
@@ -213,7 +213,7 @@ PlotVandalism<-data[data$Category=="VANDALISM", ]
         map1<-map1 + geom_point(aes(x = PlotVehicle$X, y = PlotVehicle$Y), data = PlotVehicle, alpha = .2, color="darkgreen", size = 3)
         ##leave out vandalism. Makes the graph look junky for whatever. FIX THIS.
         ##map1<-map1 + geom_point(aes(x = PlotVandalism$X, y = PlotVandalism$Y), data = PlotVehicle, alpha = .2, color="orange", size = 3)
-print(map1)
+        map1
 
 png(filename="Crime Map.png")
 map1
@@ -238,7 +238,7 @@ _DarkGreen_ data points representing Vehicle Theft are more spread across the Ci
         plot1<-ggplot(TheftTime, aes(x=Time, y=V1))+geom_point(colour="red", size=2)+geom_smooth()
         plot1<-plot1+xlab("Time")+ylab("Number")+ggtitle("Theft/Larcency v. Time")
         
-        print(plot1)
+        plot1
         png(filename="Theft.png")
         plot1
         dev.off()
@@ -249,7 +249,7 @@ _DarkGreen_ data points representing Vehicle Theft are more spread across the Ci
         plot1<-ggplot(AssaultTime, aes(x=Time, y=V1))+geom_point(colour="blue", size=2)+geom_smooth()
         plot1<-plot1+xlab("Time")+ylab("Number")+ggtitle("Assault v. Time")
         
-        print(plot1)
+        plot1
         png(filename="Larcency.png")
         plot1
         dev.off()
@@ -261,7 +261,7 @@ _DarkGreen_ data points representing Vehicle Theft are more spread across the Ci
         plot1<-ggplot(VehicleTime, aes(x=Time, y=V1))+geom_point(colour="darkgreen", size=2)+geom_smooth()
         plot1<-plot1+xlab("Time")+ylab("Number")+ggtitle("Vehicle Theft v. Time")
         
-        print(plot1)
+        plot1
         png(filename="Vehicle.png")
         plot1
         dev.off()
@@ -273,7 +273,7 @@ _DarkGreen_ data points representing Vehicle Theft are more spread across the Ci
         plot1<-ggplot(VandalismTime, aes(x=Time, y=V1))+geom_point(colour="orange", size=2)+geom_smooth()
         plot1<-plot1+xlab("Time")+ylab("Number")+ggtitle("Vandalism v. Time")
         
-        print(plot1)
+        plot1
 
         png(filename="Vandalism.png")
         plot1
