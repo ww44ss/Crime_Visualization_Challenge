@@ -1,5 +1,5 @@
 ---
-title: "SF Crime Visualization"
+title: "San Francisco Crime Visualization"
 author: "ww44ss"
 date: "Oct  2014"
 output: 
@@ -7,8 +7,21 @@ html_document:
     keep_md: true
 ---
 
+##Synopisis
 
-```{r "data file information", echo=TRUE}
+This analysis looks at San Francisco crime data. It addresses the questions:  
+- Does the number of crimes show obvious day to day variation, particularly between weekdays and weekends?    
+- How does crime vary day to day on a per district basis?  
+- Can we see hotspots where crimes are most prevalent in San Francisco?
+- Do particular crimes happen more frequenly at different times of day?
+
+This data suggest that police patrols can be optimized to specific districts and locations to focus on particular crimes. 
+
+
+##Get Data
+
+
+```{r "data file information", echo=FALSE, message=FALSE, warning=FALSE}
 
 datadir <-"sfpd"
 files <- list.files(datadir)
@@ -18,7 +31,7 @@ len<-length(files)
 
 There were `r len` files found in the data directory `r getwd()`.  
 
-```{r "get the data"}
+```{r "get the data", echo=FALSE, message=FALSE, warning=FALSE}
 
 datafile = "SFPD_Incidents_-_Previous_Three_Months.csv"
 file = paste0(datadir,"/",datafile)    
@@ -49,10 +62,11 @@ str(data)
 
 The above shows the structure of the data. There are statistics on `r ddata[1]` crimes in the file `r "datafile"`. 
 
+##Analysis
 
-###Question 1: Does the number of crimes show obvious variation between weekdays and weekends?
+####Question 1: Does the number of crimes show obvious day to day variation, particularly between weekdays and weekends?
 
-```{r "plot of data", fig.height=3, fig.width=8, fig.align="center"  }
+```{r "plot of data", fig.height=3, fig.width=8, fig.align="center", echo=FALSE, message=FALSE, warning=FALSE  }
 
 require(ggplot2)
         ##subset data for Monday or Friday to look at weekend versus weekday
@@ -69,12 +83,13 @@ require(ggplot2)
 ```
 
 
-Crime rates seem to show correlation to the day of the week, but the correlation appears to depend on the district. For instance the Central and Southern districts are higher on the weekend whereas Taraval and Richmond appear to show little change.  
+Crime rates seem to show variation with the day of the week, but the correlation appears to depend on the district. For instance the Central and Southern districts are higher on the weekend whereas Taraval and Richmond appear to show little change.  
 
 
-##Question 2: Digging Deeper: How does crime vary by day on a per district basis?
 
-```{r "plot of data2", fig.height=5, fig.width=10, fig.align="center"  }
+####Question 2: How does crime vary day to day on a per district basis?
+
+```{r "plot of data2", fig.height=5, fig.width=10, fig.align="center" , echo=FALSE, message=FALSE, warning=FALSE }
 
 require(ggplot2)
 require(plyr)
@@ -99,11 +114,11 @@ This is more interesting. Each district has some pretty unique variation.  Some 
 - _Mission_ while having an overall farily high crime rate, shows little variation.   
 - _Tenderloin_ shows an apparent drop in the crime rate.  
 
-##Question 3: Does the type of crime vary by district?  
+####Question 3: Does the leading type of crime vary by district?  
 
 Observing the variability of crime by district its natural to ask whether the nature of crimes show any district by district distinction. The easiest way to get at this is to just pull the data aprt by district and sort. First let's just look citywide.  
 
-```{r "most prevalent crimes"}
+```{r "most prevalent crimes", echo=FALSE, message=FALSE, warning=FALSE}
 
 ## print an html table of the most prevatlent crimes
         library(xtable)
@@ -118,7 +133,7 @@ Observing the variability of crime by district its natural to ask whether the na
 ```
 
 
-```{r "most prevalent crimes by district", echo=TRUE}
+```{r "most prevalent crimes by district", echo=FALSE, message=FALSE, warning=FALSE}
 
 ## print an html table of the most prevatlent crimes
 
@@ -164,20 +179,20 @@ Observing the variability of crime by district its natural to ask whether the na
 This detail starts to show some of the richness of the data. For instance in the _Mission District_ while Larceny/Theft is the most prevalent item, assualt and drugs/narcotic violations together account for more total crime than the does Larceny/Theft.  
 In the _Richmond District_ by contrast, Assault is not among the top six items, while vandalism and vehicle theft together account for less than half of the leading crime, again Larceny/Theft.  
 
-Hence, the type of crime shows marked variation with district.  
+Hence, although the leading type of crime does not vary by district, the top crimes shows marked variation with district.  
 
-##Mapping Crime: Can we see where crimes are most prevalent in San Francisco?
+####Mapping Crime: Can we see hotspots where crimes are most prevalent in San Francisco?
 
-Here the hypothesis is that we can see crime "hot spots" by plotting them geographically. To speed up analysis I've chosen to focus only an a few "top" crimes from the lists above. Namely Larceny/Theft, Vehicle Theft, Assault, and Vandalism.
+Here the hypothesis is that we can see crime "hot spots" by plotting them geographically. This takes advatnage of the farily precise location data. To speed up analysis I've chosen to focus only an a few "top" crimes from the lists above. Namely Larceny/Theft, Vehicle Theft, Assault, and Vandalism.
 
-```{r map_it, fig.height=9, fig.width=9}
+```{r map_it, fig.height=9, fig.width=9, echo=FALSE, message=FALSE, warning=FALSE}
 require(ggmap)
 require(mapproj)
 
 PlotTheft <-data[data$Category=="LARCENY/THEFT", ]
 PlotVehicle<-data[data$Category=="VEHICLE THEFT", ]
 PlotAssault<-data[data$Category=="ASSAULT", ] 
-PlotWarrants<-data[data$Category=="VANDALISM", ] 
+PlotVandalism<-data[data$Category=="VANDALISM", ] 
 
         ##get map data
         map <- get_map(source="google", maptype="roadmap", location = 'San Francisco', zoom = 13)
@@ -188,12 +203,78 @@ PlotWarrants<-data[data$Category=="VANDALISM", ]
         map1<-map1 + geom_point(aes(x = PlotTheft$X, y = PlotTheft$Y), data = PlotTheft, alpha = .1, color="red", size = 3)
         map1<-map1 + geom_point(aes(x = PlotAssault$X, y = PlotAssault$Y), data = PlotAssault, alpha = .1, color="blue", size = 3)
         map1<-map1 + geom_point(aes(x = PlotVehicle$X, y = PlotVehicle$Y), data = PlotVehicle, alpha = .2, color="darkgreen", size = 3)
-
+        ##leave out vandalism. Makes the graph look junky for whatever. FIX THIS.
+        ##map1<-map1 + geom_point(aes(x = PlotVandalism$X, y = PlotVandalism$Y), data = PlotVehicle, alpha = .2, color="orange", size = 3)
 print(map1)
 
 ```
 
+We can see hotspots where crimes are more prevalent.
 
-The Map shows locations of crimes, with _red_ data points representing thefts appear to be loaclized to tourist areas, _blue_ data points representing Assault appear localized in the Tenderloin, and _DarkGreen_ data points representing Vehicle Theft are more spread acorss residential areas of the City.    
-    
+The Map shows locations of crimes,  
+_red_ data points correpond to thefts: these appear to be loaclized to mainly tourist areas.  
+_blue_ data points representing Assault appear localized in the Tenderloin, Mission, adn Broadway areas.  
+_DarkGreen_ data points representing Vehicle Theft are more spread across the City but appear most prevalent in residential areas.
+
+####Do particular crimes happen more frequenly at different times of day?
+
+```{r "by_time_of_day", fig.align='center', fig.height=3, fig.width=5, echo=FALSE, message=FALSE, warning=FALSE}
+
+        ##ddply the Larceny time of day
+        TheftTime<-ddply(PlotTheft, .(Time), nrow)
+
+        plot1<-ggplot(TheftTime, aes(x=Time, y=V1))+geom_point(colour="red", size=2)+geom_smooth()
+        plot1<-plot1+xlab("Time")+ylab("Number")+ggtitle("Theft/Larcency v. Time")
+        
+        print(plot1)
+
+        ##ddply the Larceny time of day
+        AssaultTime<-ddply(PlotAssault, .(Time), nrow)
+
+        plot1<-ggplot(AssaultTime, aes(x=Time, y=V1))+geom_point(colour="blue", size=2)+geom_smooth()
+        plot1<-plot1+xlab("Time")+ylab("Number")+ggtitle("Assault v. Time")
+        
+        print(plot1)
+
+
+        ##ddply the Vehicle Theft time of day
+        VehicleTime<-ddply(PlotVehicle, .(Time), nrow)
+
+        plot1<-ggplot(VehicleTime, aes(x=Time, y=V1))+geom_point(colour="darkgreen", size=2)+geom_smooth()
+        plot1<-plot1+xlab("Time")+ylab("Number")+ggtitle("Vehicle Theft v. Time")
+        
+        print(plot1)
+
+
+        ##ddply Vandalism data by time
+        VandalismTime<-ddply(PlotVandalism, .(Time), nrow)
+        ##plot the data
+        plot1<-ggplot(VandalismTime, aes(x=Time, y=V1))+geom_point(colour="orange", size=2)+geom_smooth()
+        plot1<-plot1+xlab("Time")+ylab("Number")+ggtitle("Vandalism v. Time")
+        
+        print(plot1)
+
+
+
+
+
+
+```
+
+Rather interestingly particular crimes seem to show distinct time behavior. For instance Theft and Larceny appear to be low during morning hours, but peak around 6 pm. Combining this with teh above information suggests that, for instance, police patrols would  be most effective in tourist areas around 6 pm to about 8 pm, after which it drops off.   
+
+Patrols for Assualt, which is also well localized, need to be in place most of the day. The rate rises rapildy from morning hours and then plateaus for most of the day, falling off again only after midnight.  
+
+  
+Vehicle theft and vandalism, on the other hand, pickup only after about 6 pm and drop off, apparently, after midnight, suggesting polic patrols for these crimes need to focus primarily on evening hours.
+
+##Conclusions
+
+THis quick exploratory analysis found that crime frequency and type vary strongly by location in the city and also by time of day. Crime hotspots, like the Tenderloin, require patrols for Assault throughout the day. Partols for theft adn larceny, which occur mostly in tourist areas, occur primarily around 6 pm to midnight, with a rapid decrease afterward. 
+
+More ananlysis is recommended. For instance I noticed on teh SFPD website that several years of data could be downloaded. It woudl be interesting to correlate this data with changes in vagrancy laws and police patroling strategies to see what has been effective in reducing crime. 
+
+There are some inherent systematic assumptions in this data which also need further assessment. For instance the data here correlate to police action, not by the crimes themselves. Unreported crimes are not reflected in this analysis. Also, while the data looks at the frequency of police action, it does not accurately represent the hazard rate for an individual since population density is not accounted for (for instance just because there are more crimes in the Broadway district does not necessarily reflect a signficant increase in danger for an individual, since this is an area with a signficant nightlife population).  
+
+
     
