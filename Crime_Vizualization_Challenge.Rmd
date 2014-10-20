@@ -2,9 +2,8 @@
 title: "San Francisco Crime Visualization"
 author: "ww44ss"
 date: "Oct  2014"
-output: 
-html_document:
-    keep_md: true
+output: pdf_document
+
 ---
 
 ##Synopisis
@@ -67,9 +66,9 @@ The above shows the structure of the data. There are statistics on `r ddata[1]` 
 ##Analysis
 
 
-####Question 1: How does crime vary day to day on a per district basis?
+####Question 1: How does crime vary day to day on a per district basis?  
 
-```{r "plot of data2", fig.height=5, fig.width=10, fig.align="center" , echo=FALSE, message=FALSE, warning=FALSE }
+```{r "plot of data2", fig.height=4, fig.width=7,  echo=FALSE, message=FALSE, warning=FALSE, results="asis"}
 
 require(ggplot2)
 require(plyr)
@@ -84,15 +83,12 @@ dataX <- ddply(data,.(DayOfWeek, PdDistrict), nrow)
         plotA<-plotA+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
         #plotA<-plotA+coord_flip()
 
-        plotA
+        print(plotA)
 
-png(filename="District Day of Week.png")
-plotA
-dev.off()
 
 ```
 
-To analyze I'll just leverage ability of R to ply the data apart by day and district. At this point the analysis looks at total crime reports only. Later I'll look at types of crimes. 
+To analyze ply the data apart by day and district. At this point the analysis looks at total crime reports only. Later I'll look at types of crimes. 
 
 District by district crime rates show variation in the day of the week. Each district has some pretty unique variation.  Some of the more interesting ones are listed below.
 - _Southern_ has the highest crime rate by far, strongly peaking on Friday night.  
@@ -153,12 +149,12 @@ By district the results show some variation.
 ```
 
 
-This detail starts to show some of the richness of the data. For instance in the _Mission District_ while Larceny/Theft is the most prevalent item, assualt and drugs/narcotic violations together account for more total crime than the does Larceny/Theft.  
+This starts to show some of the richness of the data. For instance in the _Mission District_ while Larceny/Theft is the most prevalent item, assualt and drugs/narcotic violations together account for more total crime than the does Larceny/Theft.  
 In the _Richmond District_, by contrast, Assault is not among the top six items, while vandalism and vehicle theft together account for less than half of the leading crime, again Larceny/Theft.  
 
 Hence, although the leading type of crime does not vary by district, the top crimes shows marked variation depending on the district.  
 
-####Are there crime hotspots?
+####Question 3: Are there crime hotspots?
 
 Here the hypothesis is there are "hot spots" where specific crimes tend to be localized. We can answer this by plotting crime types geographically. The easiest way to see this is to map the results. To speed up analysis I've chosen to focus only an a few "top" crimes from the lists above. Namely Larceny/Theft, Vehicle Theft,  and Assault.
 
@@ -184,9 +180,6 @@ PlotVandalism<-data[data$Category=="VANDALISM", ]
         #map1<-map1 + geom_point(aes(x = PlotVandalism$X, y = PlotVandalism$Y), data = PlotVandalism, alpha = .2, color="orange", size = 3)
         map1
 
-png(filename="Crime Map.png")
-map1
-dev.off()
 
 ```
 
@@ -197,9 +190,10 @@ _red_ data points correpond to thefts: these appear to be loaclized to mainly to
 _blue_ data points representing Assault appear localized in the Tenderloin, Mission, adn Broadway areas.  
 _DarkGreen_ data points representing Vehicle Theft are more spread across the City but appear most prevalent in residential areas.
 
-####Do specific crimes have different time correlation signatures?
-
-```{r "by_time_of_day", fig.align='center', fig.height=3, fig.width=5, echo=FALSE, message=FALSE, warning=FALSE}
+####Question 4: Do crimes have unique time correlation signatures?  
+  
+Let's first look at Larcency data: 
+```{r "by_time_of_day", fig.height=3, fig.width=5, echo=FALSE, message=FALSE, warning=FALSE}
 
         ##ddply the Larceny time of day
         TheftTime<-ddply(PlotTheft, .(Time), nrow)
@@ -209,9 +203,11 @@ _DarkGreen_ data points representing Vehicle Theft are more spread across the Ci
         plot1<-plot1+ylim(c(0, 850))
         
         plot1
-        png(filename="Theft.png")
-        plot1
-        dev.off()
+```    
+
+This looks very different from the Assault data below.  
+
+```{r "time2" , fig.height=3, fig.width=5, echo=FALSE, message=FALSE, warning=FALSE }
 
         ##ddply the Assault time of day
         AssaultTime<-ddply(PlotAssault, .(Time), nrow)
@@ -221,11 +217,12 @@ _DarkGreen_ data points representing Vehicle Theft are more spread across the Ci
         plot1<-plot1+ylim(c(0, 200))
         
         plot1
-        png(filename="Larcency.png")
-        plot1
-        dev.off()
 
+```
 
+And vehicle threft shows an even more pronounced behavior.  
+
+```{r "time3" , fig.height=3, fig.width=5, echo=FALSE, message=FALSE, warning=FALSE }
         ##ddply the Vehicle Theft time of day
         VehicleTime<-ddply(PlotVehicle, .(Time), nrow)
 
@@ -233,7 +230,7 @@ _DarkGreen_ data points representing Vehicle Theft are more spread across the Ci
         plot1<-plot1+xlab("Time")+ylab("Number")+ggtitle("Vehicle Theft v. Time")
         plot1<-plot1+ylim(c(0, 200))
         
-
+        plot1
 
 
 
