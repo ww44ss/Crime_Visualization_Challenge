@@ -307,7 +307,7 @@ b<-multiplot(plotTheft, plotAssault, plotVehicle, plotVandalism, cols=2)
 
 ##Store png file of graph
 png("TimesOfCrimes.png")
-        b
+multiplot(plotTheft, plotAssault, plotVehicle, plotVandalism, cols=2)
 dev.off()
 
 ##Display
