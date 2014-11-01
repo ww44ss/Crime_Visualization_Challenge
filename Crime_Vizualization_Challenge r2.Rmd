@@ -55,10 +55,7 @@ data <- read.csv(file)
         ##this proved reliable and not too complicated.
         data$Time <- as.numeric(substring(as.character(data$Time),1,2))
 
-str(data)
-
         ddata<-dim(data)
-
 
 ```
 
@@ -78,25 +75,21 @@ dataX <- ddply(data,.(DayOfWeek, PdDistrict), nrow)
 
         ##plot the data
 
-        plotA <- ggplot(dataX, aes(x= factor(DayOfWeek), y = V1))
-        plotA<- plotA+ geom_point(colour="blue")
-        plotA<-plotA+facet_wrap(~PdDistrict, ncol=5) 
+        plotA <- ggplot(dataX, aes(x= factor(DayOfWeek), y = V1, fill = PdDistrict))
+        plotA<- plotA+ geom_bar(stat="identity")
         plotA<-plotA+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+        plotA<-plotA+ggtitle("Number of Crimes\nby Day of Week")
+        plotA<-plotA+ylab("total crimes")
+        plotA<-plotA+xlab("weekday")
         #plotA<-plotA+coord_flip()
+png("crimebyweekday.png")
+        plotA
+dev.off()
 
-        print(plotA)
-
+plotA
 
 ```
-
-To analyze ply the data apart by day and district. At this point the analysis looks at total crime reports only. Later I'll look at types of crimes. 
-
-District by district crime rates show variation in the day of the week. Each district has some pretty unique variation.  Some of the more interesting ones are listed below.
-- _Southern_ has the highest crime rate by far, strongly peaking on Friday night.  
-- _Bayview_ is mostly flat, but seems to show a higher rate on Friday nights.   
-- _Central_ shows a strong upward trend on the weekends, with Friday and Saturday night showing about 20% increase in crime.   
-- _Mission_ while having an overall farily high crime rate, shows little variation.   
-- _Tenderloin_ shows an apparent drop in the crime rate.  
+ 
 
 ####Question 2: Does the leading type of crime vary by district?  
 
@@ -163,10 +156,12 @@ Here the hypothesis is there are "hot spots" where specific crimes tend to be lo
 require(ggmap)
 require(mapproj)
 
-PlotTheft <-data[data$Category=="LARCENY/THEFT", ]
-PlotVehicle<-data[data$Category=="VEHICLE THEFT", ]
-PlotAssault<-data[data$Category=="ASSAULT", ] 
-PlotVandalism<-data[data$Category=="VANDALISM", ] 
+##Subset data by crime
+## here focus on only top crimes
+        PlotTheft <-data[data$Category=="LARCENY/THEFT", ]
+        PlotVehicle<-data[data$Category=="VEHICLE THEFT", ]
+        PlotAssault<-data[data$Category=="ASSAULT", ] 
+        PlotVandalism<-data[data$Category=="VANDALISM", ] 
 
         ##get map data
         map <- get_map(source="google", maptype="roadmap", location = 'San Francisco', zoom = 13)
@@ -181,6 +176,10 @@ PlotVandalism<-data[data$Category=="VANDALISM", ]
         #map1<-map1 + geom_point(aes(x = PlotVandalism$X, y = PlotVandalism$Y), data = PlotVandalism, alpha = .2, color="orange", size = 3)
         map1
 
+##Store png version of data
+png("CrimeMap.png")
+map1
+dev.off()
 
 ```
 
@@ -200,10 +199,10 @@ Let's first look at Larcency data:
         TheftTime<-ddply(PlotTheft, .(Time), nrow)
 
         plot1<-ggplot(TheftTime, aes(x=Time, y=V1))+geom_point(colour="red", size=2)+geom_smooth()
-        plot1<-plot1+xlab("Time")+ylab("Number")+ggtitle("Theft/Larcency v. Time")
-        plot1<-plot1+ylim(c(0, 850))
+        plot1<-plot1+xlab("Time (h)")+ylab("Number")+ggtitle("Theft/Larcency v. Time")
+        plotTheft<-plot1+ylim(c(0, 850))
         
-        plot1
+        #plotTheft
 ```    
 
 This looks very different from the Assault data below.  
@@ -214,10 +213,10 @@ This looks very different from the Assault data below.
         AssaultTime<-ddply(PlotAssault, .(Time), nrow)
 
         plot1<-ggplot(AssaultTime, aes(x=Time, y=V1))+geom_point(colour="blue", size=2)+geom_smooth()
-        plot1<-plot1+xlab("Time")+ylab("Number")+ggtitle("Assault v. Time")
-        plot1<-plot1+ylim(c(0, 200))
+        plot1<-plot1+xlab("Time (h)")+ylab("Number")+ggtitle("Assault v. Time")
+        plotAssault<-plot1+ylim(c(0, 200))
         
-        plot1
+        #plotAssault
 
 ```
 
@@ -228,12 +227,91 @@ And vehicle threft shows an even more pronounced behavior.
         VehicleTime<-ddply(PlotVehicle, .(Time), nrow)
 
         plot1<-ggplot(VehicleTime, aes(x=Time, y=V1))+geom_point(colour="darkgreen", size=2)+geom_smooth()
-        plot1<-plot1+xlab("Time")+ylab("Number")+ggtitle("Vehicle Theft v. Time")
-        plot1<-plot1+ylim(c(0, 200))
+        plot1<-plot1+xlab("Time (h)")+ylab("Number")+ggtitle("Vehicle Theft v. Time")
+        plotVehicle<-plot1+ylim(c(0, 200))
         
-        plot1
+        #plotVehicle
 
 
+
+```
+
+
+```{r "by_V", fig.height=3, fig.width=5, echo=FALSE, message=FALSE, warning=FALSE}
+
+        ##ddply the Larceny time of day
+        VandalismTime<-ddply(PlotVandalism, .(Time), nrow)
+
+        plot1<-ggplot(VandalismTime, aes(x=Time, y=V1))+geom_point(colour="red", size=2)+geom_smooth()
+        plot1<-plot1+xlab("Time (h)")+ylab("Number")+ggtitle("Vandalism v. Time")
+        plotVandalism<-plot1+ylim(c(0, 200))
+        
+        #plotVandalism
+```    
+
+```{r "mulitplot", echo=FALSE, warning=FALSE}
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  require(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+```
+
+
+```{r, echo=FALSE}
+
+
+##define multiple graph
+b<-multiplot(plotTheft, plotAssault, plotVehicle, plotVandalism, cols=2)
+
+##Store png file of graph
+png("TimesOfCrimes.png")
+        b
+dev.off()
+
+##Display
+b
 
 ```
 
