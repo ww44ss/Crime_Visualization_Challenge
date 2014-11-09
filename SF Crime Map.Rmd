@@ -25,6 +25,9 @@ I have downloaded complete crime stats from sfpd for years 2003 to 2014. This ex
 
 ```{r "data file information", echo=FALSE, message=FALSE, warning=FALSE}
 
+require(bitops)
+require(RCurl)
+
 datadir <-"sfpd_incident_all_csv"
 files <- list.files(datadir)
 len<-length(files)
