@@ -153,13 +153,18 @@ dev.off()
 
 Assault data are plotted with an alpha of 0.1.  
 
-Hotspots near teh Mission, Tenderloin, and near Broadway.
-
+Hotspots near the Mission, Tenderloin, and Broadway districts.
 
 ##Conclusions
 
-The crime data clearly show the different localities for specific crimes. To me at least this is surprising. 
+The crime data clearly show different geographical patterns for specific crimes. To me at least this is surprising. 
 
-One can speculate about some potential causes for this. For instance, is this related to the location perferences of perpetrators or of victims. This might be revealed by looking at time differences for crimes or perhaps seasonal variations. 
+One can speculate about some potential causes for this. For instance, is this related to the location preferences of perpetrators or the density of victims. Do the patterns show seasonal shifts. Do other crimes show different or similar pattersn to one another?
+
+This analysis simply reveals differences in patterns. However, it also suggests several intersting questions. 
+
+
+
+
 
 
