@@ -1,0 +1,331 @@
+---
+title: "San Francisco Crime Visualization"
+author: "ww44ss"
+date: "Oct  2014"
+output: html_document
+
+---
+
+##Synopisis
+
+Looking at recent San Francisco crime data this analysis addresses the questions:   
+- What hotspots are there where crimes are most prevalent in San Francisco?
+- When do the crimes occur during the day and does this differ by crime? 
+
+It finds that specific crimes appear localized in hotspots that are consistent with intuition - at least in hindsight. 
+
+I also introduce an interesting graphical way of looking at "time signatrues" of events and show that signatures differ by crime.
+
+##Get Data
+
+
+```{r "data file information", echo=FALSE, message=FALSE, warning=FALSE}
+
+datadir <-"sfpd"
+files <- list.files(datadir)
+len<-length(files)
+
+```
+
+There were `r len` files found in the data directory `r getwd()`.  
+
+Data cleaning was pretty straight-forward. Set factors to makes days of week follow standard order (instead of default alphabetical). Convert Date to a r date format. Time I just chose to bucket by hour rather than convert to hh:mm format, which was too fine grained. 
+
+```{r "get the data", echo=FALSE, message=FALSE, warning=FALSE}
+
+datafile = "SFPD_Incidents_-_Previous_Three_Months.csv"
+file = paste0(datadir,"/",datafile)    
+
+data <- read.csv(file)
+
+        ##fix day of week order
+        data$DayOfWeek <- factor(data$DayOfWeek, levels= c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+
+        ##for simplicity keep only complete cases
+        data<-data[complete.cases(data),]
+
+        data$Date<-as.Date(as.character(data$Date), "%m/%d/%Y")
+
+        #had to be a little clever with the time , basically trick everything to think it is the same day.
+        #data$Time<-as.POSIXct(paste("1970-01-01", as.character(data$Time)), format="%Y-%m-%d %H:%M")
+
+        ##while the aboce works. I found the analysis looks easier just hacking out the hour....
+        
+
+        ##Alternate method is just to that the hh and convert to a number.
+        ##this proved reliable and not too complicated.
+        data$Time <- as.numeric(substring(as.character(data$Time),1,2))
+
+        ddata<-dim(data)
+
+```
+
+The above shows the structure of the data. There are statistics on `r ddata[1]` crimes in the file `r "datafile"`. 
+
+##Analysis
+
+
+####Question 1: How does crime vary day to day on a per district basis?  
+
+```{r "plot of data2", fig.height=4, fig.width=7,  echo=FALSE, message=FALSE, warning=FALSE, results="asis"}
+
+require(ggplot2)
+require(plyr)
+
+dataX <- ddply(data,.(DayOfWeek, PdDistrict), nrow)
+
+        ##plot the data
+
+        plotA <- ggplot(dataX, aes(x= factor(DayOfWeek), y = V1, fill = PdDistrict))
+        plotA<- plotA+ geom_bar(stat="identity")
+        plotA<-plotA+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+        plotA<-plotA+ggtitle("Number of Crimes\nby Day of Week")
+        plotA<-plotA+ylab("total crimes")
+        plotA<-plotA+xlab("weekday")
+        #plotA<-plotA+coord_flip()
+png("crimebyweekday.png")
+        plotA
+dev.off()
+
+plotA
+
+```
+ 
+
+####Question 2: Does the leading type of crime vary by district?  
+
+Observing the variability of crime by district its natural to ask whether the nature of crimes show any district by district distinction. The easiest way to get at this is to just pull the data aprt by district and sort. First let's just look citywide.  
+
+```{r "most prevalent crimes", echo=FALSE, message=FALSE, warning=FALSE}
+
+## print an html table of the most prevatlent crimes
+        library(xtable)
+
+        ## sort the data
+        SF <- sort(table(data$Category), decreasing=TRUE)
+        ## turn table into data frame
+        SF<-as.data.frame(SF)
+        ## just dump the first six lines
+        head(SF, n=6)
+
+```
+
+By district the results show some variation. 
+
+```{r "most prevalent crimes by district", echo=FALSE, message=FALSE, warning=FALSE}
+
+## print an html table of the most prevatlent crimes
+
+        ##subset the data for a few specific districts
+        PlotTenderloin <-data[data$PdDistrict=="TENDERLOIN", ]
+        PlotMission<-data[data$PdDistrict=="MISSION", ]
+        PlotNorthern<-data[data$PdDistrict=="NORTHERN", ]   
+        PlotRichmond<-data[data$PdDistrict=="RICHMOND", ]  
+
+
+        ##Mission District
+        ## sort the data
+        ctable <- sort(table(PlotMission$Category), decreasing=TRUE)
+        ctable<-as.data.frame(ctable)
+        ## keep only top ten
+        print("MISSION")
+        head(ctable, n=5)
+
+        ##Data for Richmond
+         ## sort the data
+        ctable <- sort(table(PlotRichmond$Category), decreasing=TRUE)
+        ctable<-as.data.frame(ctable)
+        ## keep only top ten
+        print("RICHMOND")
+        head(ctable, n=5)
+        
+
+
+```
+
+
+This starts to show some of the richness of the data. For instance in the _Mission District_ while Larceny/Theft is the most prevalent item, assualt and drugs/narcotic violations together account for more total crime than the does Larceny/Theft.  
+In the _Richmond District_, by contrast, Assault is not among the top six items, while vandalism and vehicle theft together account for less than half of the leading crime, again Larceny/Theft.  
+
+Hence, although the leading type of crime does not vary by district, the top crimes shows marked variation depending on the district.  
+
+####Question 3: Are there crime hotspots?
+
+Here the hypothesis is there are "hot spots" where specific crimes tend to be localized. We can answer this by plotting crime types geographically. The easiest way to see this is to map the results. To speed up analysis I've chosen to focus only an a few "top" crimes from the lists above. Namely Larceny/Theft, Vehicle Theft,  and Assault.
+
+```{r map_it, fig.height=9, fig.width=9, echo=FALSE, message=FALSE, warning=FALSE}
+require(ggmap)
+require(mapproj)
+
+##Subset data by crime
+## here focus on only top crimes
+        PlotTheft <-data[data$Category=="LARCENY/THEFT", ]
+        PlotVehicle<-data[data$Category=="VEHICLE THEFT", ]
+        PlotAssault<-data[data$Category=="ASSAULT", ] 
+        PlotVandalism<-data[data$Category=="VANDALISM", ] 
+
+        ##get map data
+        map <- get_map(source="google", maptype="roadmap", location = 'San Francisco', zoom = 13)
+        ##generate map
+        map1 <- ggmap(map) 
+
+        ## 
+        map1<-map1 + geom_point(aes(x = PlotTheft$X, y = PlotTheft$Y), data = PlotTheft, alpha = .1, color="red", size = 3)
+        map1<-map1 + geom_point(aes(x = PlotAssault$X, y = PlotAssault$Y), data = PlotAssault, alpha = .1, color="blue", size = 3)
+        map1<-map1 + geom_point(aes(x = PlotVehicle$X, y = PlotVehicle$Y), data = PlotVehicle, alpha = .2, color="darkgreen", size = 3)
+        ##Supress Vandalism as it is just TMI.
+        #map1<-map1 + geom_point(aes(x = PlotVandalism$X, y = PlotVandalism$Y), data = PlotVandalism, alpha = .2, color="orange", size = 3)
+        map1
+
+##Store png version of data
+png("CrimeMap.png")
+map1
+dev.off()
+
+```
+
+Clear hotspots are visible
+
+The Map shows locations of crimes,  
+_red_ data points correpond to thefts: these appear to be loaclized to mainly tourist areas.  
+_blue_ data points representing Assault appear localized in the Tenderloin, Mission, adn Broadway areas.  
+_DarkGreen_ data points representing Vehicle Theft are more spread across the City but appear most prevalent in residential areas.
+
+####Question 4: Do crimes have unique time correlation signatures?  
+  
+Let's first look at Larcency data: 
+```{r "by_time_of_day", fig.height=3, fig.width=5, echo=FALSE, message=FALSE, warning=FALSE}
+
+        ##ddply the Larceny time of day
+        TheftTime<-ddply(PlotTheft, .(Time), nrow)
+
+        plot1<-ggplot(TheftTime, aes(x=Time, y=V1))+geom_point(colour="red", size=2)+geom_smooth()
+        plot1<-plot1+xlab("Time (h)")+ylab("Number")+ggtitle("Theft/Larcency v. Time")
+        plotTheft<-plot1+ylim(c(0, 850))
+        
+        #plotTheft
+```    
+
+This looks very different from the Assault data below.  
+
+```{r "time2" , fig.height=3, fig.width=5, echo=FALSE, message=FALSE, warning=FALSE }
+
+        ##ddply the Assault time of day
+        AssaultTime<-ddply(PlotAssault, .(Time), nrow)
+
+        plot1<-ggplot(AssaultTime, aes(x=Time, y=V1))+geom_point(colour="blue", size=2)+geom_smooth()
+        plot1<-plot1+xlab("Time (h)")+ylab("Number")+ggtitle("Assault v. Time")
+        plotAssault<-plot1+ylim(c(0, 200))
+        
+        #plotAssault
+
+```
+
+And vehicle threft shows an even more pronounced behavior.  
+
+```{r "time3" , fig.height=3, fig.width=5, echo=FALSE, message=FALSE, warning=FALSE }
+        ##ddply the Vehicle Theft time of day
+        VehicleTime<-ddply(PlotVehicle, .(Time), nrow)
+
+        plot1<-ggplot(VehicleTime, aes(x=Time, y=V1))+geom_point(colour="darkgreen", size=2)+geom_smooth()
+        plot1<-plot1+xlab("Time (h)")+ylab("Number")+ggtitle("Vehicle Theft v. Time")
+        plotVehicle<-plot1+ylim(c(0, 200))
+        
+        #plotVehicle
+
+
+
+```
+
+
+```{r "by_V", fig.height=3, fig.width=5, echo=FALSE, message=FALSE, warning=FALSE}
+
+        ##ddply the Larceny time of day
+        VandalismTime<-ddply(PlotVandalism, .(Time), nrow)
+
+        plot1<-ggplot(VandalismTime, aes(x=Time, y=V1))+geom_point(colour="red", size=2)+geom_smooth()
+        plot1<-plot1+xlab("Time (h)")+ylab("Number")+ggtitle("Vandalism v. Time")
+        plotVandalism<-plot1+ylim(c(0, 200))
+        
+        #plotVandalism
+```    
+
+```{r "mulitplot", echo=FALSE, warning=FALSE}
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  require(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+```
+
+
+```{r, echo=FALSE}
+
+
+##define multiple graph
+b<-multiplot(plotTheft, plotAssault, plotVehicle, plotVandalism, cols=2)
+
+##Store png file of graph
+png("TimesOfCrimes.png")
+multiplot(plotTheft, plotAssault, plotVehicle, plotVandalism, cols=2)
+dev.off()
+
+##Display
+b
+
+```
+
+Crimes seem to show distinct time behavior. For instance Theft and Larceny appear to be low during morning hours, but peak around 6 pm.  Vehicle theft , on the other hand, picks up only after about 6 pm and drops off after midnight.
+
+##Conclusions
+
+This quick exploratory analysis found that crime frequency and type vary strongly by location in the city and also by time of day. Taking the data at face value, it suggests that plic patrols could be optimized for time and location, especially when targeting specific crimes.
+
+There is some interesting analysis that could be done as a follow-up. For instance looking deeper at the time/location correlation of specific crimes. This date could be used to test the effectiveness of particular patrol and enforcement strategies.    
+   
+   
+    
+    
+       
+          

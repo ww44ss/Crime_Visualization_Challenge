@@ -1,0 +1,165 @@
+---
+title: "San Francisco Crime Map"
+author: "ww44ss"
+date: "November 2014"
+output: html_document
+
+---
+
+###Summary
+
+Looking at recent San Francisco crime data this analysis addresses the question:  
+- Are there hotspots for crimes?  
+- Do hotpots differ by crime type?  
+
+To answer this I look at Assaults and Thefts, simply plotting the data. The results show that there are crime hotspots and they do differ by crime type.   
+
+
+Code is supressed for this doc, but is available on [github](https://github.com/ww44ss/Crime_Visualization_Challenge). This is an extension of a problem on [Leada](https://www.teamleada.com/).
+
+I have downloaded complete crime stats from sfpd for years 2003 to 2014. This example will focus on comparing maps of 2013.
+
+
+####data procesing notes
+
+
+```{r "data file information", echo=FALSE, message=FALSE, warning=FALSE}
+
+datadir <-"sfpd_incident_all_csv"
+files <- list.files(datadir)
+len<-length(files)
+
+```
+
+Data are from the [San Francisco Police Bureau](https://data.sfgov.org/Public-Safety/Map-Crime-Incidents-Previous-Three-Months/gxxq-x39z). 
+
+There are `r len` files found in the data directory `r getwd()`.  
+
+Data processing is minimal.   
+- Weekdays: I set factors to makes days of week follow standard order (instead of default in R which is alphabetical).  
+- Date: Convert Date to a r date format.   
+- Time: For simplicity I just chose to bucket time by hour (0-24) rather than convert to hh:mm format, which was too fine grained for the analysis I was interesested in. 
+
+There were `r len` files found in the data directory `r getwd()`.  
+
+
+```{r "get the data", echo=FALSE, message=FALSE, warning=FALSE}
+
+datafile = "sfpd_incident_2013.csv"
+file = paste0(datadir,"/",datafile)    
+
+data <- read.csv(file)
+
+        ##fix day of week order
+        data$DayOfWeek <- factor(data$DayOfWeek, levels= c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+
+        ##for simplicity keep only complete cases
+        data<-data[complete.cases(data),]
+
+        data$Date<-as.Date(as.character(data$Date), "%m/%d/%Y")
+
+        #had to be a little clever with the time , basically trick everything to think it is the same day.
+        #data$Time<-as.POSIXct(paste("1970-01-01", as.character(data$Time)), format="%Y-%m-%d %H:%M")
+
+        ##while the aboce works. I found the analysis looks easier just hacking out the hour....
+        
+
+        ##Alternate method is just to that the hh and convert to a number.
+        ##this proved reliable and not too complicated.
+        data$Time <- as.numeric(substring(as.character(data$Time),1,2))
+
+        ddata<-dim(data)
+
+```
+
+There are statistics on `r ddata[1]` crimes in the file `r "datafile"`.  
+  
+
+Here the hypothesis is there are "hot spots" where specific crimes tend to be localized. We can answer this by plotting crime types geographically. The easiest way to see this is to map the results. To speed up analysis I've chosen to focus only an a few "top" crimes from the lists above. Namely Larceny/Theft, Vehicle Theft,  and Assault.
+
+
+###2013 Thefts
+
+```{r map_it, fig.height=5, fig.width=5, fig.align='center',  echo=FALSE, message=FALSE, warning=FALSE}
+require(ggmap)
+require(mapproj)
+
+##Subset data by crime
+## here focus on only four crimes
+        PlotTheft <-data[data$Category=="LARCENY/THEFT", ]
+        PlotVehicle<-data[data$Category=="VEHICLE THEFT", ]
+        PlotAssault<-data[data$Category=="ASSAULT", ] 
+        PlotVandalism<-data[data$Category=="VANDALISM", ] 
+
+        ##get map data
+        map <- get_map(source="google", maptype="roadmap", location = 'San Francisco', zoom = 13)
+        ##generate map
+        map1 <- ggmap(map) 
+
+        ## 
+        map1<-map1 + geom_point(aes(x = PlotTheft$X, y = PlotTheft$Y), data = PlotTheft, alpha = .02, color="slateblue2", size = 2)
+
+        #map1<-map1 + geom_point(aes(x = PlotAssault$X, y = PlotAssault$Y), data = PlotAssault, alpha = .1, color="tomato2", size = 3.5)
+        #map1<-map1 + geom_point(aes(x = PlotVehicle$X, y = PlotVehicle$Y), data = PlotVehicle, alpha = .1, color="springgreen4", size = 3)
+        #map1<-map1 + geom_point(aes(x = PlotVandalism$X, y = PlotVandalism$Y), data = PlotVandalism, alpha = .2, color="orange", size = 3)
+        map1
+
+##Store png version of data
+png("2013 Theft Map.png")
+map1
+dev.off()
+
+```
+
+The thefts data are plotted with an alpha of 0.02 meaning 50 overlapping points are reqired to make a fully solid point. 
+
+Hotspots near Geary Ave and the Mission are clear. 
+
+
+###2013 Assaults
+
+
+```{r map_it2, fig.height=5, fig.width=5,fig.align='center', echo=FALSE, message=FALSE, warning=FALSE}
+require(ggmap)
+require(mapproj)
+
+##Subset data by crime
+## here focus on only four crimes
+        PlotTheft <-data[data$Category=="LARCENY/THEFT", ]
+        PlotVehicle<-data[data$Category=="VEHICLE THEFT", ]
+        PlotAssault<-data[data$Category=="ASSAULT", ] 
+        PlotVandalism<-data[data$Category=="VANDALISM", ] 
+
+        ##get map data
+        map <- get_map(source="google", maptype="roadmap", location = 'San Francisco', zoom = 13)
+        ##generate map
+        map1 <- ggmap(map) 
+
+        ## 
+        #map1<-map1 + geom_point(aes(x = PlotTheft$X, y = PlotTheft$Y), data = PlotTheft, alpha = .1, color="slateblue2", size = 3.5)
+
+        map1<-map1 + geom_point(aes(x = PlotAssault$X, y = PlotAssault$Y), data = PlotAssault, alpha = .1, color="tomato2", size = 2)
+        #map1<-map1 + geom_point(aes(x = PlotVehicle$X, y = PlotVehicle$Y), data = PlotVehicle, alpha = .1, color="springgreen4", size = 3)
+        ##Supress Vandalism as it is just TMI.
+        #map1<-map1 + geom_point(aes(x = PlotVandalism$X, y = PlotVandalism$Y), data = PlotVandalism, alpha = .2, color="orange", size = 3)
+        map1
+
+##Store png version of data
+png("2013 Assault Map.png")
+map1
+dev.off()
+
+```
+
+Assault data are plotted with an alpha of 0.1.  
+
+Hotspots near teh Mission, Tenderloin, and near Broadway.
+
+
+##Conclusions
+
+The crime data clearly show the different localities for specific crimes. To me at least this is surprising. 
+
+One can speculate about some potential causes for this. For instance, is this related to the location perferences of perpetrators or of victims. This might be revealed by looking at time differences for crimes or perhaps seasonal variations. 
+
+
